@@ -46,7 +46,7 @@ public class ViewMain extends JFrame implements Runnable,ActionListener{
         //center of the object ... in our case
 //        Vector3D vLookAt = new Vector3D(0, 0, 0);
         Vector3D vPosition = new Vector3D(0, 0, -10);
-
+        angleY = angleX = angleZ = 1.0f;
         ourCamera = new Camera(vPosition);
         drawCanvas = new Canvas3D(width,height - bottomPanelHeight);
     }
@@ -136,26 +136,43 @@ public class ViewMain extends JFrame implements Runnable,ActionListener{
 
 
     public void objectInitTransform(){
+        float zNear = 0.001f, zFar = 1000.0f, fieldOfView = 30.0f;
+        int actualHeight = height - bottomPanelHeight;
+
         Matrix m = new Matrix();
         //initially rotate the object along Y
-        angleX = 0.0f;
-        angleZ = 0.0f;
-        angleY = 10.0f;
-
+        
         m.rotatex(angleX);
         m.rotatey(angleY);
         m.rotatez(angleZ);
 
         _newObject = new Object3D(_origObject);
-        _newObject.transform3D(m);
+       // _newObject.transform3D(m);
 
-        m.translate(0, 0, -100);
+        m.translate(0, 0, -10);
         _newObject.transform3D(m);
         //moved the center as well,so lookat vector is transformed ..
         ourCamera.setTarget(_newObject.getObjectCenter());
-        
         _newObject.transform3D(ourCamera.getMatCam());
+
+        float size;
+
+        float d = (float) (fieldOfView * Math.PI/180.);
+
+        //size = (float)Math.tan(d / 2.0);
+        //size *= zNear ;
+
+	float down ;//= size / (width / actualHeight);
+
+        size = 0.5f;
+        down = 0.5f;
+        zNear = 1;
+        zFar = 10;
+        Matrix projMat = _newObject.projection(-size, size, -down, down, zNear, zFar);
+        _newObject.perspective3D(projMat, zFar, zNear, width, actualHeight);
+        /*
         _newObject.perspective3D(width, height - bottomPanelHeight);
+         */
         drawCanvas.setObject(_newObject);
     }
 
@@ -164,6 +181,16 @@ public class ViewMain extends JFrame implements Runnable,ActionListener{
         Thread thisThread = Thread.currentThread();
         while(thisThread == runner){
             try {
+                //angleY = (Math.abs(360.0f - angleY) < 0.00001f)? 0 : angleY++;
+                //angleX += 1.0f;
+                angleY += 1.0f;
+                //if(Math.abs(360.0f - angleX) < Object3D.EPSILON)
+                  //  angleX = 1.0f;
+                if(Math.abs(360.0f - angleY) < Object3D.EPSILON)
+                    angleY = 1.0f;
+
+                objectInitTransform();
+                drawCanvas.repaint();
                 Thread.sleep(50);
                 }
               catch (InterruptedException e) { }

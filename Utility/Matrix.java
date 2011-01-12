@@ -12,12 +12,22 @@ package Utility;
 public class Matrix {
     public float element[][];
 
+    public Matrix(boolean zeroMatrix ){
+
+        this();
+        if(zeroMatrix){
+            element[0][0]=element[1][1]=element[2][2]=element[3][3] = 0.0f;
+        }
+    }
+
     public Matrix()
     {
         element = new float[4][4];
 
         this.identity();
     }
+
+
 
     public Matrix(Matrix m)
     {

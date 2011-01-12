@@ -151,6 +151,14 @@ public class Vector3D {
       return result;
    }// End length(..)
 
+   public void normalizeDeviceCoordiantes(){
+       //divide by w-clip value
+        element[0] /= element[3];
+        element[1] /= element[3];
+        element[2] /= element[3];
+   }
+
+
    public Vector3D normalize(Vector3D a)
    {
       Vector3D result = new Vector3D();

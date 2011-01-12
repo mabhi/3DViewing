@@ -75,8 +75,7 @@ public class Canvas3D extends Canvas{
     @Override
     public void update(Graphics g)
     {
-        g.drawImage( offImage, 0, 0, this );
-
+        paint(g);
     }
 
     // paint the object and world axis on view window
@@ -88,7 +87,9 @@ public class Canvas3D extends Canvas{
             offGraphics = offImage.getGraphics();
         }
         drawObject(offGraphics);
-        update(g);
+        g.drawImage( offImage, 0, 0, this );
+
+        //update(g);
     }
 
 }

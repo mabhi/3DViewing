@@ -35,6 +35,7 @@ public class Object3D {
     public ObjectType objectType;
     private Point[] projectedPoints;
     //by default it takes the shape of a cube...
+    public static final float EPSILON = .000001f;
 
     public Object3D(){
         this.objectType = ObjectType.CUBE;
@@ -86,7 +87,7 @@ public class Object3D {
 
     private void setCube(){
         numOfVertices = 8;
-        int k = 30;
+        int k = 1;
         vertices = new Vector3D[numOfVertices];
         vertices[0] = new Vector3D( -k, -k, -k );
         vertices[1] = new Vector3D( -k, -k,  k );
@@ -159,7 +160,67 @@ public class Object3D {
         return projectedPoints;
     }
 
-    
+    public Matrix projection(float left, float right,float bottom, float top, float near, float far){
+        
+        float invRLDiff = 1 / (right - left + Object3D.EPSILON);
+        float invUDDiff = 1 / (top - bottom + Object3D.EPSILON);
+        float invFNDiff = 1 / (far - near + Object3D.EPSILON);
+        
+        Matrix mProj = new Matrix(true);
+        
+        mProj.element[0][0] = 2 * near * invRLDiff;
+        mProj.element[0][2] = (right + left) * invRLDiff;
+
+        mProj.element[1][1] = 2 * near * invUDDiff;
+        mProj.element[1][2] = (top + bottom) * invUDDiff;
+
+        mProj.element[2][2] = -1 * (far + near) * invFNDiff;
+        mProj.element[2][3] = -2 * (far * near) * invFNDiff;
+
+        mProj.element[3][2] = -1;
+
+        return mProj;
+    }
+
+    public void perspective3D(Matrix projectionMatrix, float far, float near, int scr_x,int scr_y){
+
+        Point[] points = new Point[ vertices.length ];
+
+        int j;
+        float fnDiff = (far - near + Object3D.EPSILON ) / 2;
+        float fnSum = (far + near ) / 2;
+        float hw = scr_x / 2;
+        float hh = scr_y / 2;
+        int viewDistance = 200;
+        Vector3D vertex;
+        float x1,y1,z1;
+
+        for ( j = 0; j < vertices.length; ++j ) {
+
+            x1 = vertices[j].element[0];
+            y1 = vertices[j].element[1];
+            z1 = vertices[j].element[2];
+            vertex = new Vector3D(x1, y1, z1);
+            //vertex.make_point();
+            //clip coordinates ...
+            vertex.multiply(projectionMatrix);
+            //normalize device coordinates ...
+            vertex.normalizeDeviceCoordiantes();
+            //screen coordinates ..
+
+            x1 = hw * (vertex.element[0]) + hw;
+            y1 = hh * (vertex.element[1]) + hh;
+            z1 = fnDiff * vertex.element[2]  + fnSum;
+
+            points[j] = new Point(
+                (int)(x1),
+                (int)(y1)
+            );
+        }
+        projectedPoints = points;
+
+    }
+
     public void perspective3D(int scr_x,int scr_y){
 
         Point[] points;
